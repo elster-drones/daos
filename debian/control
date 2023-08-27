@@ -3,14 +3,16 @@ Section: net
 Priority: optional
 Maintainer: daos-stack <daos@daos.groups.io>
 Build-Depends: debhelper (>= 10),
+               golang (>= 1.18.0),
+               golang-go (>= 1.18.0),
                dh-python,
                libcmocka-dev,
-               libfabric-dev (>= 1.15.1-1),
+               libfabric-dev,
                libhwloc-dev,
                libopenmpi-dev,
                libssl-dev,
                libyaml-dev,
-               libmercury-dev (>= 2.2.0-6),
+               libmercury-dev,
                scons,
                uuid-dev,
                pkg-config,
@@ -18,18 +20,17 @@ Build-Depends: debhelper (>= 10),
                python3-distro,
                libabt-dev,
                libucx-dev,
-               libpmemobj-dev (>= 1.12.1~rc1),
+               libpmemobj-dev,
                libfuse3-dev,
                libprotobuf-c-dev,
                libjson-c-dev,
-               dpdk-dev (>= 21.11.2),
+               dpdk-dev,
                libisal-crypto-dev,
                libcunit1-dev,
-               golang-go,
                libboost-dev,
-               libspdk-dev (>= 22.01.2),
+               libspdk-dev,
                libipmctl-dev,
-               libraft-dev (= 0.10.1-1409.gc354cd7),
+               libraft-dev,
                python3-tabulate,
                liblz4-dev,
                libcapstone-dev
@@ -111,7 +112,7 @@ Description: This is the package is a metapackage to install all of the internal
 Package: daos-client-tests
 Architecture: any
 Multi-Arch: same
-Depends: python (>=3.8), python3, python-yaml, python3-yaml,
+Depends: python (>=3.11), python3, python-yaml, python3-yaml,
          ${shlibs:Depends}, ${misc:Depends},
          daos-client (= ${binary:Version}),
          daos-admin (= ${binary:Version}),
@@ -152,7 +153,7 @@ Package: daos-client
 Section: net
 Architecture: any
 Multi-Arch: same
-Depends: ${shlibs:Depends}, ${misc:Depends}, openmpi-bin, libfabric (>= 1.15.1-1)
+Depends: ${shlibs:Depends}, ${misc:Depends}, openmpi-bin, libfabric1
 Description: The Distributed Asynchronous Object Storage (DAOS) is an open-source
  software-defined object store designed from the ground up for
  massively distributed Non Volatile Memory (NVM). DAOS takes advantage
@@ -171,7 +172,7 @@ Section: net
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends}, ${misc:Depends}, openmpi-bin,
-         ipmctl (>=03.00.00.0468), libfabric (>= 1.15.1-1), spdk-tools (>= 22.01.2)
+         ipmctl (>=03.00.00.0468), libfabric1, spdk-tools (>= 22.01.2)
 Description: The Distributed Asynchronous Object Storage (DAOS) is an open-source
  software-defined object store designed from the ground up for
  massively distributed Non Volatile Memory (NVM). DAOS takes advantage
@@ -202,3 +203,10 @@ Description: The Distributed Asynchronous Object Storage (DAOS) is an open-sourc
  .
  This package contains the DAOS administrative tools (e.g. dmg).
 
+
+Package: elster-daos-certs
+Section: net
+Architecture: any
+Multi-Arch: same
+Depends: daos
+Description: Elsters daos cert

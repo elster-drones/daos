@@ -9,3 +9,7 @@ chown root:daos_server /usr/bin/daos_server_helper
 chown root:daos_server /usr/bin/daos_server
 # apply recently installed sysctl conf
 /usr/lib/systemd/systemd-sysctl /usr/lib/sysctl.d/10-daos_server.conf >/dev/null 2>&1 || :
+
+# Enable library
+echo "/usr/lib64/" >> /etc/ld.so.conf
+ldconfig

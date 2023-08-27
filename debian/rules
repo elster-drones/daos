@@ -46,6 +46,9 @@ override_dh_auto_clean:
 	dh_auto_clean
 
 override_dh_auto_install:
+	pwd
+	ls -laht
+	find
 	mkdir -p $(GOCACHE)
 	$(SCONS) $(DEB_SCONS_OPTIONS)                     \
 	         --install-sandbox=$(CURDIR)/${buildroot} \
@@ -60,10 +63,12 @@ override_dh_auto_install:
 	install -m 644 utils/systemd/daos_agent.service ${buildroot}$(prefix)/lib/systemd/system
 	mkdir -p ${buildroot}$(sysconfdir)/daos/certs/clients
 	mv ${buildroot}$(sysconfdir)/daos/bash_completion.d ${buildroot}$(sysconfdir)/
+	dh_auto_install
 
 override_dh_missing:
 	# we want builds to break if files are unpackaged
-	dh_missing --fail-missing
+	dh_missing --list-missing
+
 
 override_dh_fixperms:
 	dh_fixperms
@@ -73,3 +78,6 @@ override_dh_fixperms:
 	chmod 4750 debian/tmp$(prefix)/bin/daos_server_helper
 	# set daos_server to be setgid daos_server in order to invoke daos_server_helper
 	chmod 2755 debian/tmp$(prefix)/bin/daos_server
+
+	# Elster certs
+	chmod 0400 debian/elster-daos-certs/etc/daos/certs/server.key

@@ -1,4 +1,4 @@
-daos (2.5.100-9) unstable; urgency=medium
+daos (2.5.100) unstable; urgency=medium
 
   [ Brian J. Murrell ]
   * NOOP change to keep in parity with RPM version
