@@ -1,1 +1,3 @@
 usr/lib64/*.so.*
+usr/lib64/libdaos_common.so
+utils/ldconfig/daos_lib.conf /etc/ld.so.conf.d/

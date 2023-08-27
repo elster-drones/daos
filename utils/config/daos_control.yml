@@ -23,14 +23,14 @@
 
 # Hostlist, a comma separated list of addresses (hostnames or IPv4 addresses).
 # default: ['localhost']
-#hostlist: ['localhost']
+hostlist: ['elster-storage']
 
 ## Transport Credentials Specifying certificates to secure communications
 
-#transport_config:
+transport_config:
 #  # In order to disable transport security, uncomment and set allow_insecure
 #  # to true. Not recommended for production configurations.
-#  allow_insecure: false
+  allow_insecure: true
 #
 #  # Custom CA Root certificate for generated certs
 #  ca_cert: /etc/daos/certs/daosCA.crt

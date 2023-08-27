@@ -9,6 +9,8 @@ PyDAOS Module allowing global access to the DAOS containers and objects.
 """
 
 import enum
+import json
+import datetime
 
 # pylint: disable-next=relative-beyond-top-level
 from . import DAOS_MAGIC, DaosClient, PyDError, pydaos_shim
@@ -296,11 +298,11 @@ class DDict(_DObj):
         if ret != pydaos_shim.DER_SUCCESS:
             raise PyDError("failed to close object", ret)
 
-    def get(self, key):
+    def get(self, key, resolution: str = ""):
         """Retrieve value associated with the key."""
 
         d = {key: None}
-        self.bget(d)
+        self.bget(d, resolution=resolution)
         if d[key] is None:
             raise KeyError(key)
         return d[key]
@@ -323,7 +325,7 @@ class DDict(_DObj):
         """Remove key from the dictionary."""
         self.put(key, None)
 
-    def bget(self, d, value_size=None):
+    def bget(self, d, value_size=None, resolution: str = ""):
         """Bulk get value for all the keys of the input python dictionary."""
         if d is None:
             return d
@@ -332,6 +334,34 @@ class DDict(_DObj):
         ret = pydaos_shim.kv_get(DAOS_MAGIC, self.oh, d, value_size)
         if ret != pydaos_shim.DER_SUCCESS:
             raise PyDError("failed to retrieve KV value", ret)
+
+        keys = list(d.keys())
+        for key in keys:
+            value = d[key]
+            if type(value) == bytes:
+                try:
+                    d[key] = json.loads(value)
+
+                    if 'padding' in d[key]:
+                        del d[key]['padding']
+
+                    if resolution:
+                        if resolution in d[key]:
+                            d[key] = {
+                                resolution : d[key][resolution]
+                            }
+                        else:
+                            del d[key]
+
+                except Exception as e:
+                    try:
+                        d[key] = str(value, encoding='ascii')
+                    except Exception as e:
+                        print ("ERROR: ", e)
+                        print (key, value)
+            else:
+                print ("ERROR: type not expected: ", type(value), key, value)
+
         return d
 
     def bput(self, d):
@@ -342,14 +372,18 @@ class DDict(_DObj):
         if ret != pydaos_shim.DER_SUCCESS:
             raise PyDError("failed to store KV value", ret)
 
-    def dump(self):
+    def dump(self, start: str = "", stop: str = "", resolution: str = ""):
         """Fetch all the key-value pairs, return them in a python dictionary."""
         # leverage python iterator, see __iter__/__next__ below
         # could be optimized over the C library in the future
         d = {}
         for key in self:
             d[key] = None
-        self.bget(d)
+        self.bget(d, resolution=resolution)
+
+        # Sort
+        d = {k: d[k] for k in sorted(d.keys())}
+
         return d
 
     def __len__(self):
@@ -389,6 +423,34 @@ class DDict(_DObj):
 
     def __iter__(self):
         return DDictIter(self)
+
+    #
+    # Goldengoose Functions Follow
+    #
+    def get_range(self, start, stop: str = "", resolution: str = ""):
+        try:
+            datetime.datetime.strptime(start, '%Y-%m-%dT%H:%M:%SZ')
+        except Exception as e:
+            print ("ERROR: invalid key format: ", start)
+            return
+
+        if stop:
+            try:
+                datetime.datetime.strptime(stop, '%Y-%m-%dT%H:%M:%SZ')
+            except Exception as e:
+                print ("ERROR: invalid key format: ", stop)
+                return
+        else:
+            stop = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:00Z')
+
+        d = {}
+        for key in self:
+            if key >= start and key <= stop:
+                d[key] = None
+
+        self.bget(d, resolution=resolution)
+        return d
+
 
 # pylint: disable=too-few-public-methods
 

@@ -1,7 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
-addgroup --system daos_agent
+getent group daos_agent || addgroup --system daos_agent
 adduser --system --ingroup daos_agent daos_agent
-addgroup --system daos_daemons
-usermod -G -a daos_daemons daos_agent
+getent group daos_daemons || addgroup --system daos_daemons
+usermod -a -G daos_daemons daos_agent
+
+# Python Path
+grep -q 'Goldengoose' /etc/bash.bashrc || echo 'export PYTHONPATH="$PYTHONPATH:/usr/lib64/python3.11/site-packages/" # Goldengoose Entry' >> /etc/bash.bashrc
+grep -q 'NA_PLUGIN_PATH' /etc/bash.bashrc || echo 'export NA_PLUGIN_PATH="/usr/lib/x86_64-linux-gnu/" # Goldengoose Entry' >> /etc/bash.bashrc

@@ -9,6 +9,7 @@ package main
 import (
 	"context"
 	"net"
+//	"fmt"
 
 	"github.com/daos-stack/daos/src/control/drpc"
 	"github.com/daos-stack/daos/src/control/lib/daos"
@@ -65,6 +66,7 @@ func (m *SecurityModule) getCredential(session *drpc.Session) ([]byte, error) {
 	}
 
 	cred, err := auth.AuthSysRequestFromCreds(m.ext, info, signingKey)
+	m.log.Tracef("ez info: %v\n", cred)
 	if err != nil {
 		m.log.Errorf("%s: failed to get AuthSys struct: %s", info, err)
 		return m.credRespWithStatus(daos.MiscError)
