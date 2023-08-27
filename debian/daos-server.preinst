@@ -1,9 +1,17 @@
 #!/bin/sh
 set -e
 
-addgroup --system daos_server
+# Add daos_server
+getent group daos_server || addgroup --system daos_server
 adduser --system --ingroup daos_server daos_server
-addgroup --system daos_metrics
-usermod -G -a daos_metrics daos_server
-addgroup --system daos_daemons
-usermod -G -a daos_daemons daos_server
+
+getent group daos_metrics || addgroup --system daos_metrics
+usermod -a -G daos_metrics daos_server
+
+getent group daos_daemons || addgroup --system daos_daemons
+usermod -a -G daos_daemons daos_server
+
+# Add daos_server_helper
+adduser --system --ingroup daos_server daos_server_helper
+chmod 4755 /usr/bin/daos_server_helper
+

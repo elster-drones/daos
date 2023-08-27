@@ -1,1 +1,2 @@
 usr/lib64/*.so.*
+usr/lib64/libdaos_common.so
