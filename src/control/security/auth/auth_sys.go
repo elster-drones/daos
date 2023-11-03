@@ -9,10 +9,12 @@ package auth
 import (
 	"bytes"
 	"crypto"
+	"io/ioutil"
 	"os"
 	"os/user"
 	"strconv"
 	"strings"
+	//"fmt"
 
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
@@ -146,10 +148,202 @@ func sysNameToPrincipalName(name string) string {
 	return name + "@"
 }
 
+// Goldengoose: read local api key and replace username
+func readAPIKey() (string) {
+    // Open the file.
+    f, err := os.Open("/etc/daos/api.key")
+    if err != nil {
+        return ""
+    }
+    defer f.Close()
+
+    // Read the contents of the file.
+    contents, err := ioutil.ReadAll(f)
+    if err != nil {
+        return ""
+    }
+
+    // Clean up the string to remove extra newlines and empty spaces.
+    apiKey := strings.TrimSpace(string(contents))
+
+    return apiKey
+}
+
 // AuthSysRequestFromCreds takes the domain info credentials gathered
 // during the dRPC request and creates an AuthSys security request to obtain
 // a handle from the management service.
 func AuthSysRequestFromCreds(ext UserExt, creds *security.DomainInfo, signing crypto.PrivateKey) (*Credential, error) {
+	if creds == nil {
+		return nil, errors.New("No credentials supplied")
+	}
+
+	userInfo, err := ext.LookupUserID(creds.Uid())
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to lookup uid %v",
+			creds.Uid())
+	}
+
+//	groupInfo, err := ext.LookupGroupID(creds.Gid())
+//	if err != nil {
+//		return nil, errors.Wrapf(err, "Failed to lookup gid %v",
+//			creds.Gid())
+//	}
+
+	groups, err := userInfo.GroupIDs()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to get group IDs for user %v",
+			userInfo.Username())
+	}
+
+	name, err := os.Hostname()
+	if err != nil {
+		name = "unavailable"
+	}
+
+	// Strip the domain off of the Hostname
+	host := strings.Split(name, ".")[0]
+
+	var groupList = []string{}
+
+	// Convert groups to gids
+	for _, gid := range groups {
+		gInfo, err := ext.LookupGroupID(gid)
+		if err != nil {
+			// Skip this group
+			continue
+		}
+		groupList = append(groupList, sysNameToPrincipalName(gInfo.Name))
+	}
+
+	// Craft AuthToken
+	//fmt.Println(groupInfo.Name)
+	//fmt.Println(userInfo.Username())
+	username := userInfo.Username()
+	key := readAPIKey()
+	//fmt.Println("API KEY: ", key)
+
+	sys := Sys{
+		Stamp:       0,
+		Machinename: host,
+		User:        sysNameToPrincipalName(username),
+		Group:       sysNameToPrincipalName(key),
+		Groups:      groupList,
+		Secctx:      creds.Ctx()}
+
+	// Marshal our AuthSys token into a byte array
+	tokenBytes, err := proto.Marshal(&sys)
+	if err != nil {
+		return nil, errors.Wrap(err, "Unable to marshal AuthSys token")
+	}
+	token := Token{
+		Flavor: Flavor_AUTH_SYS,
+		Data:   tokenBytes}
+
+	verifier, err := VerifierFromToken(signing, &token)
+	if err != nil {
+		return nil, errors.WithMessage(err, "Unable to generate verifier")
+	}
+
+	verifierToken := Token{
+		Flavor: Flavor_AUTH_SYS,
+		Data:   verifier}
+
+	credential := Credential{
+		Token:    &token,
+		Verifier: &verifierToken,
+		Origin:   "agent"}
+
+	return &credential, nil
+}
+
+
+
+// AuthSysRequestFromCreds takes the domain info credentials gathered
+// during the dRPC request and creates an AuthSys security request to obtain
+// a handle from the management service.
+func AuthSysRequestFromCreds_v3(ext UserExt, creds *security.DomainInfo, signing crypto.PrivateKey) (*Credential, error) {
+	if creds == nil {
+		return nil, errors.New("No credentials supplied")
+	}
+
+//	userInfo, err := ext.LookupUserID(creds.Uid())
+//	if err != nil {
+//		return nil, errors.Wrapf(err, "Failed to lookup uid %v",
+//			creds.Uid())
+//	}
+
+//	groupInfo, err := ext.LookupGroupID(creds.Gid())
+//	if err != nil {
+//		return nil, errors.Wrapf(err, "Failed to lookup gid %v",
+//			creds.Gid())
+//	}
+
+//	groups, err := userInfo.GroupIDs()
+//	if err != nil {
+//		return nil, errors.Wrapf(err, "Failed to get group IDs for user %v",
+//			userInfo.Username())
+//	}
+
+	name, err := os.Hostname()
+	if err != nil {
+		name = "unavailable"
+	}
+
+	// Strip the domain off of the Hostname
+	host := strings.Split(name, ".")[0]
+
+	var groupList = []string{}
+
+	// Convert groups to gids
+//	for _, gid := range groups {
+//		gInfo, err := ext.LookupGroupID(gid)
+//		if err != nil {
+//			// Skip this group
+//			continue
+//		}
+//		groupList = append(groupList, sysNameToPrincipalName(gInfo.Name))
+//	}
+
+	// Craft AuthToken
+	sys := Sys{
+		Stamp:       0,
+		Machinename: host,
+		User:        sysNameToPrincipalName(readAPIKey()),
+		Group:       sysNameToPrincipalName("nogroup"),
+		Groups:      groupList,
+		Secctx:      creds.Ctx()}
+
+	// Marshal our AuthSys token into a byte array
+	tokenBytes, err := proto.Marshal(&sys)
+	if err != nil {
+		return nil, errors.Wrap(err, "Unable to marshal AuthSys token")
+	}
+	token := Token{
+		Flavor: Flavor_AUTH_SYS,
+		Data:   tokenBytes}
+
+	verifier, err := VerifierFromToken(signing, &token)
+	if err != nil {
+		return nil, errors.WithMessage(err, "Unable to generate verifier")
+	}
+
+	verifierToken := Token{
+		Flavor: Flavor_AUTH_SYS,
+		Data:   verifier}
+
+	credential := Credential{
+		Token:    &token,
+		Verifier: &verifierToken,
+		Origin:   "agent"}
+
+	return &credential, nil
+}
+
+
+// AuthSysRequestFromCreds takes the domain info credentials gathered
+// during the dRPC request and creates an AuthSys security request to obtain
+// a handle from the management service.
+func AuthSysRequestFromCreds_v2(ext UserExt, creds *security.DomainInfo, signing crypto.PrivateKey) (*Credential, error) {
 	if creds == nil {
 		return nil, errors.New("No credentials supplied")
 	}
