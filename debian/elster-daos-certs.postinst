@@ -1,4 +1,0 @@
-#!/bin/bash
-
-set -e
-chmod 0400 /etc/daos/certs/agent.key

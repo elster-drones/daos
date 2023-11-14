@@ -1,4 +1,3 @@
-utils/certs/daosCA /etc/daos/certs
 utils/certs/daosCA/certs/admin.crt /etc/daos/certs/
 utils/certs/daosCA/certs/admin.key /etc/daos/certs/
 utils/certs/daosCA/certs/server.crt /etc/daos/certs/
@@ -6,3 +5,4 @@ utils/certs/daosCA/certs/server.key /etc/daos/certs/
 utils/certs/daosCA/certs/daosCA.crt /etc/daos/certs/
 utils/certs/daosCA/certs/agent.crt /etc/daos/certs/
 utils/certs/daosCA/certs/agent.key /etc/daos/certs/
+utils/certs/daosCA/certs/clients /etc/daos/certs/
