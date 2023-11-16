@@ -1,0 +1,25 @@
+#!/bin/bash
+
+set -e
+set -x
+
+case "${1}" in
+    install|upgrade|configure)
+        echo "/usr/lib64/" > /etc/ld.so.conf
+        /usr/sbin/ldconfig
+        echo 'export PYTHONPATH="/usr/lib64/python3.11/site-packages/:$PYTHONPATH"' > /etc/bash.bashrc
+        export PYTHONPATH="/usr/lib64/python3.11/site-packages/:$PYTHONPATH"
+	systemctl enable daos_agent.service
+	systemctl start daos_agent.service
+	;;
+
+    abort-upgrade)
+        ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
