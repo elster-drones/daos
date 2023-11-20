@@ -45,6 +45,10 @@ import (
 // the client network autoconfiguration hints, and the set of ranks associated with MS
 // replicas. If req.AllRanks is true, all ranks' fabric URIs are also given the client.
 func (svc *mgmtSvc) GetAttachInfo(ctx context.Context, req *mgmtpb.GetAttachInfoReq) (*mgmtpb.GetAttachInfoResp, error) {
+
+	fmt.Println("Inside GetAttachInfo")
+	fmt.Println("----req: ", req)
+
 	if err := svc.checkReplicaRequest(req); err != nil {
 		return nil, err
 	}
@@ -87,6 +91,7 @@ func (svc *mgmtSvc) GetAttachInfo(ctx context.Context, req *mgmtpb.GetAttachInfo
 
 	resp.Sys = svc.sysdb.SystemName()
 
+	fmt.Println("----EZ: resp: ", resp)
 	return resp, nil
 }
 
@@ -111,6 +116,9 @@ func (svc *mgmtSvc) LeaderQuery(ctx context.Context, req *mgmtpb.LeaderQueryReq)
 
 // getPeerListenAddr provides the resolved TCP address where the peer server is listening.
 func getPeerListenAddr(ctx context.Context, listenAddrStr string) (*net.TCPAddr, error) {
+
+	fmt.Println("Inside getPeerListenAddr")
+
 	ipAddr, portStr, err := net.SplitHostPort(listenAddrStr)
 	if err != nil {
 		return nil, errors.Wrap(err, "get listening port")

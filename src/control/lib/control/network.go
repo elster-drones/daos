@@ -9,6 +9,8 @@ package control
 import (
 	"fmt"
 	"sort"
+	"reflect"
+	"regexp"
 
 	"github.com/mitchellh/hashstructure/v2"
 	"github.com/pkg/errors"
@@ -267,5 +269,17 @@ func GetAttachInfo(ctx context.Context, rpcClient UnaryInvoker, req *GetAttachIn
 	}
 
 	gair := new(GetAttachInfoResp)
-	return gair, convertMSResponse(ur, gair)
+	conv_res := convertMSResponse(ur, gair)
+	fmt.Println("---DD: gair: ", gair)
+	fmt.Println("---DD: cnv_res: ", conv_res)
+	fmt.Println("---DD: ", reflect.TypeOf(gair))
+	fmt.Println("---DD: ", reflect.TypeOf(gair.ServiceRanks))
+	ipRegex := regexp.MustCompile(`(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`)
+	for i, rank := range gair.ServiceRanks {
+		fmt.Println(i, rank.Uri)
+	    	rank.Uri = ipRegex.ReplaceAllString(rank.Uri, "73.93.84.167")	
+	}
+	fmt.Println("---DD: gair replaced: ", gair)
+
+	return gair, conv_res
 }
