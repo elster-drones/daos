@@ -15,6 +15,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -254,6 +255,8 @@ func (srv *server) setCoreDumpFilter() error {
 func (srv *server) initNetwork() error {
 	defer srv.logDuration(track("time to init network"))
 
+	fmt.Println("-------II: Starting initNetwork")
+
 	ctlAddr, err := getControlAddr(ctlAddrParams{
 		port:           srv.cfg.ControlPort,
 		replicaAddrSrc: srv.sysdb,
@@ -269,6 +272,9 @@ func (srv *server) initNetwork() error {
 	}
 	srv.ctlAddr = ctlAddr
 	srv.listener = listener
+
+	fmt.Println("-----II: ctlAddr: ", ctlAddr)
+	fmt.Println("-----II: listener: ", listener)
 
 	return nil
 }
@@ -364,6 +370,8 @@ func (srv *server) setupGrpc() error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("------II: starting setupGrpc")
 
 	srv.grpcServer = grpc.NewServer(srvOpts...)
 	ctlpb.RegisterCtlSvcServer(srv.grpcServer, srv.ctlSvc)
@@ -592,6 +600,8 @@ func Start(log logging.Logger, cfg *config.Server) error {
 	if err := srv.setupGrpc(); err != nil {
 		return err
 	}
+
+	fmt.Println("-----II: Started daos server!!!!")
 
 	srv.registerEvents()
 

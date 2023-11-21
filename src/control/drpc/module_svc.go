@@ -8,6 +8,7 @@ package drpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
@@ -96,6 +97,8 @@ func marshalResponse(sequence int64, status Status, body []byte) ([]byte, error)
 // appropriate Module, and marshals the result into the body of a drpc.Response.
 func (r *ModuleService) ProcessMessage(ctx context.Context, session *Session, msgBytes []byte) ([]byte, error) {
 	msg := &Call{}
+
+	fmt.Println("Inside ProcessMessage: ", msgBytes)
 
 	err := proto.Unmarshal(msgBytes, msg)
 	if err != nil {

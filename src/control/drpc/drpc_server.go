@@ -12,6 +12,7 @@ import (
 	"os"
 	"sync"
 	"syscall"
+	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -41,6 +42,9 @@ type DomainSocketServer struct {
 // closeSession cleans up the session and removes it from the list of active
 // sessions.
 func (d *DomainSocketServer) closeSession(s *Session) {
+
+	fmt.Println("----II: drpc closeSession")
+
 	d.sessionsMutex.Lock()
 	s.Close()
 	delete(d.sessions, s.Conn)
@@ -50,6 +54,9 @@ func (d *DomainSocketServer) closeSession(s *Session) {
 // listenSession runs the listening loop for a Session. It listens for incoming
 // dRPC calls and processes them.
 func (d *DomainSocketServer) listenSession(ctx context.Context, s *Session) {
+
+	fmt.Println("-----II: Starting listenSession", ctx, s)
+
 	for {
 		if err := s.ProcessIncomingMessage(ctx); err != nil {
 			d.closeSession(s)
@@ -61,6 +68,9 @@ func (d *DomainSocketServer) listenSession(ctx context.Context, s *Session) {
 // Listen listens for incoming connections on the UNIX domain socket and
 // creates individual sessions for each one.
 func (d *DomainSocketServer) Listen(ctx context.Context) {
+
+	fmt.Println("-----II: Starting listenSession (UNIX)", ctx)
+
 	go func() {
 		<-ctx.Done()
 		d.log.Debug("Quitting listener")
@@ -87,6 +97,9 @@ func (d *DomainSocketServer) Listen(ctx context.Context) {
 
 // Start sets up the dRPC server socket and kicks off the listener goroutine.
 func (d *DomainSocketServer) Start(ctx context.Context) error {
+
+	fmt.Println("-----II: Start dRPC server")
+
 	// Just in case an old socket file is still lying around
 	if err := syscall.Unlink(d.sockFile); err != nil && !os.IsNotExist(err) {
 		return errors.Wrapf(err, "Unable to unlink %s", d.sockFile)
@@ -143,6 +156,8 @@ type Session struct {
 // ProcessIncomingMessage listens for an incoming message on the session,
 // calls its handler, and sends the response.
 func (s *Session) ProcessIncomingMessage(ctx context.Context) error {
+	fmt.Println("Inside ProcessIncomingMessage")
+
 	buffer := make([]byte, MaxMsgSize)
 
 	bytesRead, err := s.Conn.Read(buffer)
@@ -177,6 +192,9 @@ func (s *Session) Close() {
 
 // NewSession creates a new dRPC Session object
 func NewSession(conn net.Conn, svc *ModuleService) *Session {
+
+	fmt.Println("----II: new drpc session")
+
 	return &Session{
 		Conn: conn,
 		mod:  svc,

@@ -8,6 +8,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -71,6 +72,8 @@ func newSrvModule(log logging.Logger, sysdb poolResolver, engines []Engine, even
 
 // HandleCall is the handler for calls to the srvModule.
 func (mod *srvModule) HandleCall(_ context.Context, session *drpc.Session, method drpc.Method, req []byte) ([]byte, error) {
+
+	fmt.Println("Inside Handle Call: ", method)
 	switch method {
 	case drpc.MethodNotifyReady:
 		return nil, mod.handleNotifyReady(req)
@@ -122,6 +125,7 @@ func (mod *srvModule) handleGetPoolServiceRanks(reqb []byte) ([]byte, error) {
 }
 
 func (mod *srvModule) handlePoolFindByLabel(reqb []byte) ([]byte, error) {
+	fmt.Println("Inside handlePoolFindByLabel")
 	req := new(srvpb.PoolFindByLabelReq)
 	if err := proto.Unmarshal(reqb, req); err != nil {
 		return nil, drpc.UnmarshalingPayloadFailure()
