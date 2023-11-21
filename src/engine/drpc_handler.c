@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause-Patent
  */
 
+#include <stdio.h>
 #include "drpc_handler.h"
 #include <daos/drpc_modules.h>
 
@@ -178,6 +179,9 @@ drpc_hdlr_unregister_all(struct dss_drpc_handler *handlers)
 void
 drpc_hdlr_process_msg(Drpc__Call *request, Drpc__Response *resp)
 {
+
+	printf("----CC: starting drpc_hdlr_process_msg");
+
 	drpc_handler_t handler;
 
 	D_ASSERT(request != NULL);
