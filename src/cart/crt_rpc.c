@@ -1073,6 +1073,13 @@ crt_lc_hg_addr_fill(struct crt_rpc_priv *rpc_priv)
 
 	grp_priv = crt_grp_pub2priv(tgt_ep->ep_grp);
 
+	FILE *fp = fopen("/tmp/erik", "a+");
+	if (fp) {
+		fprintf(fp, "-----XX: Starting crt_lv_hg_addr_fill\n");
+		fprintf(fp, "-----XX: %s\n", tgt_ep->ep_tag);
+		fclose(fp);
+	}
+
 	crt_grp_lc_lookup(grp_priv, ctx->cc_idx, tgt_ep->ep_rank,
 			  tgt_ep->ep_tag, NULL, &rpc_priv->crp_hg_addr);
 }

@@ -10,6 +10,8 @@
 
 #include "crt_internal.h"
 
+#include <stddef.h>
+
 /*
  * List of supported CaRT providers. The table is terminated with the last entry
  * having nad_str = NULL.
@@ -1487,13 +1489,15 @@ crt_hg_reply_send(struct crt_rpc_priv *rpc_priv)
 {
 	hg_return_t	hg_ret;
 	int		rc = 0;
+	hg_return_t ret;
 
 	FILE *fp = fopen("/tmp/erik", "a+");
 	if (fp) {
 		fprintf(fp, "-----XX: Starting crt_hg_reply_send\n");
 		fprintf(fp, "-----XX: %s\n", rpc_priv->crp_tgt_uri);
-		fprintf(fp, "-----XX: %s\n", rpc_priv->crp_hg_addr);
-		fclose(fp);
+		fprintf(fp, "-----XX: %s\n", (char *)rpc_priv->crp_hg_addr);
+
+	fclose(fp);
 	}
 
 	D_ASSERT(rpc_priv != NULL);
