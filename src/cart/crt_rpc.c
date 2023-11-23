@@ -342,6 +342,12 @@ crt_register_proto_fi(crt_endpoint_t *ep)
 	cpf.cpf_prf   = crt_fi_rpcs;
 	cpf.cpf_base  = CRT_OPC_FI_BASE;
 
+	FILE *fp = fopen("/tmp/crt_register_proto_fi", "a+");
+	if (fp) {
+		fprintf(fp, "Starting -- crt_register_proto_fi\n");
+		fclose(fp);
+	}
+
 	rc = sem_init(&pfi.pfi_sem, 0, 0);
 	if (rc != 0)
 		return -DER_MISC;
@@ -1073,10 +1079,10 @@ crt_lc_hg_addr_fill(struct crt_rpc_priv *rpc_priv)
 
 	grp_priv = crt_grp_pub2priv(tgt_ep->ep_grp);
 
-	FILE *fp = fopen("/tmp/erik", "a+");
+	FILE *fp = fopen("/tmp/erik2", "a+");
 	if (fp) {
 		fprintf(fp, "-----XX: Starting crt_lv_hg_addr_fill\n");
-		fprintf(fp, "-----XX: %s\n", tgt_ep->ep_tag);
+		fprintf(fp, "-----XX: %u\n", tgt_ep->ep_tag);
 		fclose(fp);
 	}
 
@@ -1284,6 +1290,12 @@ crt_req_send_internal(struct crt_rpc_priv *rpc_priv)
 	crt_rpc_t	*req;
 	bool		uri_exists = false;
 	int		rc = 0;
+	
+	FILE *fp = fopen("/tmp/crt_req_send_internal", "a+");
+	if (fp) {
+		fprintf(fp, "---Starting crt_req_send_interal\n");
+		fclose(fp);
+	}
 
 	req = &rpc_priv->crp_pub;
 	switch (rpc_priv->crp_state) {

@@ -46,6 +46,13 @@ type fabricResult struct {
 }
 
 func (p *Provider) getFabricInterfaces(provider string, ch chan *fabricResult) {
+
+	FILE *fp = fopen("/tmp/erik", "a+");
+	if (fp) {
+		fprintf(fp, "----ZZ: getFabricInterfaces\n");
+		fclose(fp);
+	}
+
 	hdl, err := openLib()
 	if err != nil {
 		ch <- &fabricResult{

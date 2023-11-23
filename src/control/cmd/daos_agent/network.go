@@ -9,6 +9,7 @@ package main
 import (
 	"context"
 	"strings"
+	"fmt"
 
 	"github.com/daos-stack/daos/src/control/cmd/dmg/pretty"
 	"github.com/daos-stack/daos/src/control/common"
@@ -77,6 +78,7 @@ func fabricInterfaceSetToHostFabric(fis *hardware.FabricInterfaceSet, filterProv
 		for _, devName := range netIFs.ToSlice() {
 			for _, provider := range fi.Providers.ToSlice() {
 				if filterProvider == "all" || strings.HasPrefix(provider.Name, filterProvider) {
+					fmt.Println("EZ!!!!!!!!: ADDInterface: ", provider.Name, devName)
 					hf.AddInterface(&control.HostFabricInterface{
 						Provider:    provider.Name,
 						Device:      devName,

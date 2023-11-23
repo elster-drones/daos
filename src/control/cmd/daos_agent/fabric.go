@@ -239,6 +239,7 @@ func (n *NUMAFabric) validateDevice(fi *FabricInterface) error {
 	}
 
 	for _, a := range addrs {
+		fmt.Println("EZ got interface: ", fi.Name, a.Network(), a.String())
 		n.log.Tracef("device %s: %s/%s", fi.Name, a.Network(), a.String())
 		if ipAddr, isIP := a.(*net.IPNet); isIP && ipAddr.IP != nil && !ipAddr.IP.IsUnspecified() {
 			return nil

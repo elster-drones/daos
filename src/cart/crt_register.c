@@ -586,6 +586,12 @@ crt_proto_query_int(crt_endpoint_t *tgt_ep, crt_opcode_t base_opc, uint32_t *ver
 		return -DER_INVAL;
 	}
 
+	FILE *fp = fopen("/tmp/crt_proto_query_int", "a+");
+	if (fp) {
+		fprintf(fp, "---Starting crt_proto_query_int\n");
+		fclose(fp);
+	}
+
 	if (cb == NULL)
 		D_WARN("crt_proto_query() is not useful when cb is NULL.\n");
 
@@ -685,6 +691,12 @@ crt_hdlr_proto_query(crt_rpc_t *rpc_req)
 	uint32_t			 high_ver = 0;
 	int				 rc_tmp = -DER_NONEXIST;
 	int				 rc = -DER_NONEXIST;
+
+	FILE *fp = fopen("/tmp/erik", "a+");
+	if (fp) {
+		fprintf(fp, "Starting crt_hdlr_proto_query\n");
+		fclose(fp);
+	}
 
 	rpc_req_input = crt_req_get(rpc_req);
 	rpc_req_output = crt_reply_get(rpc_req);

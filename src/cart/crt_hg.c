@@ -11,6 +11,9 @@
 #include "crt_internal.h"
 
 #include <stddef.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <execinfo.h>
 
 /*
  * List of supported CaRT providers. The table is terminated with the last entry
@@ -116,6 +119,12 @@ crt_hg_parse_uri(const char *uri, crt_provider_t *prov, char *addr)
 	char	*addr_str;
 	char	*track;
 
+	FILE *fp = fopen("/tmp/erik", "a+");
+	if (fp) {
+		fprintf(fp, "starting crt_hg_parse_uri...: %s\n", addr);
+		fclose(fp);
+	}
+
 	strncpy(copy_uri, uri, CRT_ADDR_STR_MAX_LEN - 1);
 
 	/*
@@ -134,7 +143,11 @@ crt_hg_parse_uri(const char *uri, crt_provider_t *prov, char *addr)
 		D_ERROR("Failed to parse address string from uri=%s\n", uri);
 		return -DER_INVAL;
 	}
-
+	fp = fopen("/tmp/erik", "a+");
+	if (fp) {
+		fprintf(fp, "...: %s\n", addr_str);
+		fclose(fp);
+	}
 	if (prov)
 		*prov = crt_prov_str_to_prov(provider_str);
 
@@ -1484,21 +1497,46 @@ crt_hg_reply_send_cb(const struct hg_cb_info *hg_cbinfo)
 	return hg_ret;
 }
 
+
+
+void printStackTraceToFile() {
+    FILE *file = fopen("/tmp/bt", "w");
+    if (file == NULL) {
+        perror("Error opening file");
+        return;
+    }
+
+    void *stackTrace[128];
+    int stackSize = backtrace(stackTrace, 128);
+    char **symbols = backtrace_symbols(stackTrace, stackSize);
+
+    if (symbols) {
+        fprintf(file, "Stack Trace:\n");
+        for (int i = 0; i < stackSize; ++i) {
+            fprintf(file, "%s\n", symbols[i]);
+        }
+        free(symbols);
+    }
+
+    fclose(file);
+}
+
+
 int
 crt_hg_reply_send(struct crt_rpc_priv *rpc_priv)
 {
 	hg_return_t	hg_ret;
 	int		rc = 0;
-	hg_return_t ret;
 
 	FILE *fp = fopen("/tmp/erik", "a+");
 	if (fp) {
 		fprintf(fp, "-----XX: Starting crt_hg_reply_send\n");
 		fprintf(fp, "-----XX: %s\n", rpc_priv->crp_tgt_uri);
 		fprintf(fp, "-----XX: %s\n", (char *)rpc_priv->crp_hg_addr);
-
-	fclose(fp);
+		fclose(fp);
 	}
+	
+	printStackTraceToFile();
 
 	D_ASSERT(rpc_priv != NULL);
 
@@ -1511,6 +1549,12 @@ crt_hg_reply_send(struct crt_rpc_priv *rpc_priv)
 		/* should success as addref above */
 		RPC_DECREF(rpc_priv);
 		rc = crt_hgret_2_der(hg_ret);
+	}
+
+	fp = fopen("/tmp/erik", "a+");
+	if (fp) {
+		fprintf(fp, "-----XX: Finished crt_hg_reply_send: %i\n", rc);
+		fclose(fp);
 	}
 
 	return rc;

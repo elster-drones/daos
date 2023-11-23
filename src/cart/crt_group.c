@@ -629,6 +629,13 @@ grp_lc_uri_insert_internal_locked(struct crt_grp_priv *grp_priv,
 
 	rlink = d_hash_rec_find(&grp_priv->gp_lookup_cache[ctx_idx],
 				(void *)&rank, sizeof(rank));
+
+	FILE *fp = fopen("/tmp/erik", "a+");
+	if (fp) {
+		fprintf(fp, "starting crt_grp_lc_uri_insert_locked: %s\n", uri);
+		fclose(fp);
+	}
+
 	if (rlink == NULL) {
 		/* target rank not in cache */
 		D_ALLOC_PTR(li);
@@ -642,6 +649,12 @@ grp_lc_uri_insert_internal_locked(struct crt_grp_priv *grp_priv,
 		D_INIT_LIST_HEAD(&li->li_link);
 		li->li_grp_priv = grp_priv;
 		li->li_rank = rank;
+		
+		fp = fopen("/tmp/erik", "a+");
+		if (fp) {
+			fprintf(fp, "--- crt_grp_lc_uri_insert_locked: rlink == NULL, about to run grp_li_uri_set\n");
+			fclose(fp);
+		}
 
 		if (uri) {
 			rc = grp_li_uri_set(li, tag, uri);
@@ -676,14 +689,35 @@ grp_lc_uri_insert_internal_locked(struct crt_grp_priv *grp_priv,
 	D_ASSERT(li->li_rank == rank);
 	D_ASSERT(li->li_initialized != 0);
 	D_MUTEX_LOCK(&li->li_mutex);
-
+	fp = fopen("/tmp/erik", "a+");
+	if (fp) {
+		fprintf(fp, "--- crt_grp_lc_uri_insert_locked: grp_li_uri_get: %s\n", grp_li_uri_get(li, tag));
+		fclose(fp);
+	}
 	if (grp_li_uri_get(li, tag) == NULL) {
+		fp = fopen("/tmp/erik", "a+");
+		if (fp) {
+			fprintf(fp, "--- crt_grp_lc_uri_insert_locked: starting grp_li_uri_set\n");
+			fclose(fp);
+		}
 		rc = grp_li_uri_set(li, tag, uri);
 
 		if (rc != DER_SUCCESS) {
+
+			fp = fopen("/tmp/erik", "a+");
+			if (fp) {
+				fprintf(fp, "--- crt_grp_lc_uri_insert_locked: failed\n");
+				fclose(fp);
+			}
+
 			D_ERROR("Failed to set uri for %d:%d, uri=%s\n",
 				li->li_rank, tag, uri);
 			rc = -DER_NOMEM;
+		}
+		fp = fopen("/tmp/erik", "a+");
+		if (fp) {
+			fprintf(fp, "--- crt_grp_lc_uri_insert_locked: finished\n");
+			fclose(fp);
 		}
 
 		D_DEBUG(DB_TRACE, "Filling in URI in lookup table. "
@@ -691,6 +725,11 @@ grp_lc_uri_insert_internal_locked(struct crt_grp_priv *grp_priv,
 			grp_priv, ctx_idx, rank, tag, &li->li_link);
 	}
 	D_MUTEX_UNLOCK(&li->li_mutex);
+	fp = fopen("/tmp/erik", "a+");
+	if (fp) {
+		fprintf(fp, "--- crt_grp_lc_uri_insert_locked: done\n");
+		fclose(fp);
+	}
 
 decref:
 	d_hash_rec_decref(&grp_priv->gp_lookup_cache[ctx_idx], rlink);
@@ -716,6 +755,12 @@ crt_grp_lc_uri_insert(struct crt_grp_priv *passed_grp_priv,
 	struct crt_grp_priv	*grp_priv;
 	int			 rc = 0;
 	int			 i;
+
+	FILE *fp = fopen("/tmp/erik", "a+");
+	if (fp) {
+		fprintf(fp, "starting crt_grp_lc_uri_insert\n");
+		fclose(fp);
+	}
 
 	if (tag >= CRT_SRV_CONTEXT_NUM) {
 		D_ERROR("tag %d out of range [0, %d].\n",
@@ -866,6 +911,10 @@ crt_grp_lc_addr_insert(struct crt_grp_priv *passed_grp_priv,
 	int			 ctx_idx;
 	int			 rc = 0;
 
+	FILE *fp = fopen("/tmp/erik", "a+");
+	fprintf(fp, "---Starting crt_grp_lc_addr_insert\n");
+	fclose(fp);
+
 	D_ASSERT(crt_ctx != NULL);
 
 	if (crt_provider_is_sep(true, crt_ctx->cc_hg_ctx.chc_provider))
@@ -963,10 +1012,15 @@ crt_grp_lc_lookup(struct crt_grp_priv *grp_priv, int ctx_idx,
 		if (uri != NULL)
 			*uri = grp_li_uri_get(li, tag);
 
-		if (hg_addr == NULL)
+		if (hg_addr == NULL) {
 			D_ASSERT(uri != NULL);
-		else if (li->li_tag_addr[tag] != NULL)
+		} else if (li->li_tag_addr[tag] != NULL) {
+			FILE *fp = fopen("/tmp/erik", "a+");
+			fprintf(fp, "---Starting crt_grp_lc_lookup\n");
+			fprintf(fp, "---Starting found li->li_tag_addr: %u\n", tag);
+			fclose(fp);
 			*hg_addr = li->li_tag_addr[tag];
+		}
 		d_hash_rec_decref(&default_grp_priv->gp_lookup_cache[ctx_idx],
 				  rlink);
 		D_GOTO(out, 0);
