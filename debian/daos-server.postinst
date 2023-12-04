@@ -11,5 +11,6 @@ chown root:daos_server /usr/bin/daos_server
 /usr/lib/systemd/systemd-sysctl /usr/lib/sysctl.d/10-daos_server.conf >/dev/null 2>&1 || :
 
 # Enable library
-echo "/usr/lib64/" >> /etc/ld.so.conf
+grep -qe "/usr/lib64/$" /etc/ld.so.conf || echo "/usr/lib64/" >> /etc/ld.so.conf
+grep -qe "/usr/lib64/daos_srv/$" || echo "/usr/lib64/daos_srv/" >> /etc/ld.so.confg
 ldconfig
