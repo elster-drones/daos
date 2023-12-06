@@ -9,6 +9,8 @@ package control
 import (
 	"fmt"
 	"sort"
+	"regexp"
+	"net"
 
 	"github.com/mitchellh/hashstructure/v2"
 	"github.com/pkg/errors"
@@ -246,6 +248,14 @@ func (gair *GetAttachInfoResp) String() string {
 	)
 }
 
+func lookupIP(domain string) (string, error) {
+	ips, err := net.LookupIP(domain)
+	if err != nil {
+		return "", err
+	}
+	return ips[0].String(), nil
+}
+
 // GetAttachInfo makes a request to the current MS leader in order to learn
 // the PSRs (rank/uri mapping) for the DAOS cluster. This information is used
 // by DAOS clients in order to make connections to DAOS servers over the storage fabric.
@@ -267,5 +277,20 @@ func GetAttachInfo(ctx context.Context, rpcClient UnaryInvoker, req *GetAttachIn
 	}
 
 	gair := new(GetAttachInfoResp)
-	return gair, convertMSResponse(ur, gair)
+	conv_res := convertMSResponse(ur, gair)
+	//fmt.Println("---DD: gair: ", gair)
+	ipRegex := regexp.MustCompile(`(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`)
+	domain := "ezthinking.org"
+	ezthinking_ip, err := lookupIP(domain)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return gair, conv_res
+	}
+	for _, rank := range gair.ServiceRanks {
+		//fmt.Println(i, rank.Uri)
+	    	rank.Uri = ipRegex.ReplaceAllString(rank.Uri, ezthinking_ip)
+	}
+	//fmt.Println("---DD: gair replaced: ", gair)
+
+	return gair, conv_res
 }
