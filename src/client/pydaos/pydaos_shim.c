@@ -179,12 +179,12 @@ cont_open(int ret, char *pool, char *cont, int flags)
 	}
 
 	/** Connect to pool */
-	rc = daos_pool_connect(pool, NULL, DAOS_PC_RW, &poh, NULL, NULL);
+	rc = daos_pool_connect(pool, NULL, DAOS_PC_RO, &poh, NULL, NULL);
 	if (rc)
 		goto out;
 
 	/** Open container */
-	rc = daos_cont_open(poh, cont, DAOS_COO_RW, &coh, NULL, NULL);
+	rc = daos_cont_open(poh, cont, DAOS_COO_RO, &coh, NULL, NULL);
 	if (rc)
 		goto out;
 
@@ -225,7 +225,7 @@ cont_open(int ret, char *pool, char *cont, int flags)
 	roots->cr_oids[0].hi |= (uint64_t)DAOS_OT_KV_HASHED << OID_FMT_TYPE_SHIFT;
 
 	/** Open root object */
-	rc = daos_kv_open(coh, roots->cr_oids[0], DAOS_OO_RW, &oh, NULL);
+	rc = daos_kv_open(coh, roots->cr_oids[0], DAOS_OO_RO, &oh, NULL);
 	if (rc)
 		goto out;
 
@@ -542,12 +542,12 @@ cont_check(int ret, char *pool, char *cont, int flags)
 	}
 
 	/** Connect to pool */
-	rc = daos_pool_connect(pool, NULL, DAOS_PC_RW, &poh, NULL, NULL);
+	rc = daos_pool_connect(pool, NULL, DAOS_PC_RO, &poh, NULL, NULL);
 	if (rc)
 		goto out;
 
 	/** Open container. */
-	rc = daos_cont_open(poh, cont, DAOS_COO_EX, &coh, NULL, NULL);
+	rc = daos_cont_open(poh, cont, DAOS_COO_RO, &coh, NULL, NULL);
 	if (rc)
 		goto out;
 
@@ -597,7 +597,7 @@ cont_check(int ret, char *pool, char *cont, int flags)
 
 	roots->cr_oids[0].hi |= (uint64_t)DAOS_OT_KV_HASHED << OID_FMT_TYPE_SHIFT;
 	/** Open root object */
-	rc = daos_kv_open(coh, roots->cr_oids[0], DAOS_OO_RW, &oh, NULL);
+	rc = daos_kv_open(coh, roots->cr_oids[0], DAOS_OO_RO, &oh, NULL);
 	if (rc) {
 		D_ERROR("daos_kv_open() failed: "DF_RC"\n", DP_RC(rc));
 		goto out;
@@ -868,7 +868,7 @@ __shim_handle__kv_open(PyObject *self, PyObject *args)
 				       &oid.lo, &flags);
 
 	/** Open object */
-	rc = daos_kv_open(hdl->coh, oid, DAOS_OO_RW, &oh, NULL);
+	rc = daos_kv_open(hdl->coh, oid, DAOS_OO_RO, &oh, NULL);
 
 	/* Populate return list */
 	return_list = PyList_New(2);
