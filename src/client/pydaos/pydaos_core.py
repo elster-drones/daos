@@ -11,6 +11,11 @@ PyDAOS Module allowing global access to the DAOS containers and objects.
 import enum
 import json
 import datetime
+import os
+
+goldengoose_debug = False
+if os.getenv("GOLDENGOOSE_DATA_DEBUG"):
+    goldengoose_debug = True
 
 # pylint: disable-next=relative-beyond-top-level
 from . import DAOS_MAGIC, DaosClient, PyDError, pydaos_shim
@@ -357,10 +362,12 @@ class DDict(_DObj):
                     try:
                         d[key] = str(value, encoding='ascii')
                     except Exception as e:
-                        print ("ERROR: ", e)
-                        print (key, value)
+                        if goldengoose_debug:
+                            print ("ERROR: ", e)
+                            print (key, value)
             else:
-                print ("ERROR: type not expected: ", type(value), key, value)
+                if goldengoose_debug:
+                    print ("ERROR: type not expected: ", type(value), key, value)
 
         return d
 
@@ -431,14 +438,16 @@ class DDict(_DObj):
         try:
             datetime.datetime.strptime(start, '%Y-%m-%dT%H:%M:%SZ')
         except Exception as e:
-            print ("ERROR: invalid key format: ", start)
+            if goldengoose_debug:
+                print ("ERROR: invalid key format: ", start)
             return
 
         if stop:
             try:
                 datetime.datetime.strptime(stop, '%Y-%m-%dT%H:%M:%SZ')
             except Exception as e:
-                print ("ERROR: invalid key format: ", stop)
+                if goldengoose_debug:
+                    print ("ERROR: invalid key format: ", stop)
                 return
         else:
             stop = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:00Z')
