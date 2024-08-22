@@ -235,6 +235,10 @@ class DDictIter():
             # no more entries to consume
             self._done = True
 
+        # Remove goldengoose metadata key
+        if 'metadata' in self._entries:
+            self._entries.remove('metadata')
+
         if len(self._entries) != 0:
             return self._entries.pop()
         raise StopIteration()
